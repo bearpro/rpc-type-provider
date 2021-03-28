@@ -1,0 +1,9 @@
+*.binlog
+bin/
+obj/
+tmp/
+packages/
+paket-files/
+.paket/
+.ionide/
+paket.lock

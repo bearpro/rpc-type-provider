@@ -1,0 +1,39 @@
+type file
+id RpcTypeProvider
+authors
+    Steffen Forkmann, Gustavo Guerra, JohnDoeKyrgyz, Don Syme
+owners
+    Steffen Forkmann, Gustavo Guerra, JohnDoeKyrgyz, Don Syme
+projectUrl
+    http://github.com/fsprojects/RpcTypeProvider
+iconUrl
+    https://raw.githubusercontent.com/fsprojects/RpcTypeProvider/master/docs/files/img/logo.png
+licenseUrl
+    http://github.com/fsprojects/RpcTypeProvider/blob/master/LICENSE.txt
+requireLicenseAcceptance
+    false
+tags
+    F# fsharp typeproviders RpcTypeProvider
+summary
+    This library is for the .NET platform implementing RpcTypeProvider.
+description
+    This library is for the .NET platform implementing RpcTypeProvider.
+tags
+    F# fsharp typeproviders RpcTypeProvider
+files
+    bin/Release/net45/RpcTypeProvider.Runtime.* ==> lib/net45
+    bin/Release/netstandard2.0/RpcTypeProvider.Runtime.* ==> lib/netstandard2.0
+    bin/Release/typeproviders/fsharp41/netstandard2.0/*.dll ==> typeproviders/fsharp41/netstandard2.0
+    bin/Release/typeproviders/fsharp41/net5.0/*.dll ==> typeproviders/fsharp41/net5.0
+    bin/Release/typeproviders/fsharp41/net45/*.dll ==> typeproviders/fsharp41/net45
+references
+    RpcTypeProvider.Runtime.dll
+dependencies
+  FSharp.Core >= LOCKEDVERSION
+
+# put any package references here
+#  Some.Package
+#  framework: netcoreapp3.1
+#    System.Text.Encoding.CodePages >= LOCKEDVERSION
+#  framework: netstandard2.0
+#    System.Text.Encoding.CodePages >= LOCKEDVERSION
