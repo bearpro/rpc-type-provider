@@ -8,6 +8,7 @@ type Value =
   | Integer
   | Float
   | String
+  | Bool
   | List of valueType: Value
   | Complex of Named list
 and Named = { name: string; valueType: Value }
@@ -31,11 +32,39 @@ module SpecificationSerializer =
             typeName.[1..]
         else
             typeName
-    
-    let getTypeValue (someType: Type) =
-        match someType.FullName with
-        | "System.Int32" -> Integer
-        | t -> failwithf "Unsupported type '%s'." t
+
+    let rec getTypeValue (someType: Type) =
+        match someType with
+        | IsPrimitiveType t -> t
+        | IsGenericEnumerable t -> t
+        | IsRecordType t -> t
+        | x -> failwithf "Unsupported type '%s'." x.Name
+    and (|IsPrimitiveType|_|) (t: Type) = 
+        match t.FullName with
+        | "System.Int32" -> Some Integer
+        | "System.Double" -> Some Float
+        | "System.String" -> Some String
+        | "System.Boolean" -> Some Bool
+        | "Microsoft.FSharp.Core.Unit" -> Some Unit
+        | _ -> None
+    and (|IsRecordType|_|) (t: Type) =
+        let isRecord (t: Type) = 
+            let attr = t.GetCustomAttribute(typeof<Microsoft.FSharp.Core.CompilationMappingAttribute>)
+            if attr <> null then 
+                let attr' = attr :?> Microsoft.FSharp.Core.CompilationMappingAttribute
+                attr'.SourceConstructFlags &&& SourceConstructFlags.RecordType = SourceConstructFlags.RecordType
+            else false
+        if isRecord t then
+            let properties = t.GetProperties(publicInstance ||| BindingFlags.GetProperty)
+            let fields = [ for prop in properties -> { name = prop.Name; valueType = getTypeValue prop.PropertyType }]
+            Some (Complex fields)
+        else None
+    and (|IsGenericEnumerable|_|) (someType: Type) =
+        let enumerable = someType.GetInterface("IEnumerable`1")
+        if enumerable <> null then
+            let genericArgument = enumerable.GenericTypeArguments.[0]
+            Some (List (getTypeValue genericArgument))
+        else None
 
     let getParamsSpec (parameters: ParameterInfo seq) =
         [ for p in parameters ->
