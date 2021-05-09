@@ -2,7 +2,7 @@ module Tests
 
 open System
 open Xunit
-open RpcTypeExporter
+open RpcTypeExporter.ApiSpecification
 
 type DevisionArguments = 
   { devisor: float 
@@ -19,12 +19,12 @@ type ISampleApi =
 
 [<Fact>]
 let ``Sample api spec name right`` () =
-    let serilizedSpec = SpecificationSerializer.serilizeApiSpec<ISampleApi>()
+    let serilizedSpec = SpecificationSerializer.serializeApiSpec<ISampleApi>()
     Assert.Equal("SampleApi", serilizedSpec.name)
 
 [<Fact>]
 let ``Sample api Sum() and Mul() members serilized right`` () =
-    let serilizedSpec = SpecificationSerializer.serilizeApiSpec<ISampleApi>()
+    let serilizedSpec = SpecificationSerializer.serializeApiSpec<ISampleApi>()
     let methods = serilizedSpec.methods
     
     let parameters = Complex([
@@ -47,7 +47,7 @@ let ``Simple record type serializedCorrect``() =
 
 [<Fact>]
 let ``Sample api Devide() member serilized right`` () =
-    let serilizedSpec = SpecificationSerializer.serilizeApiSpec<ISampleApi>()
+    let serilizedSpec = SpecificationSerializer.serializeApiSpec<ISampleApi>()
     let methods = serilizedSpec.methods
 
     let parameters = Complex([
@@ -66,7 +66,7 @@ let ``List serialized correctly`` () =
 
 [<Fact>]
 let ``Sample api DevideMany() member serialized`` () =
-    let serilizedSpec = SpecificationSerializer.serilizeApiSpec<ISampleApi>()
+    let serilizedSpec = SpecificationSerializer.serializeApiSpec<ISampleApi>()
     let methods = serilizedSpec.methods
     let parameters = Complex([
         { name = "argList"; 

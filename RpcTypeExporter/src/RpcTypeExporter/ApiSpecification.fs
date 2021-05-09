@@ -1,4 +1,4 @@
-﻿namespace RpcTypeExporter
+﻿namespace RpcTypeExporter.ApiSpecification
 
 open System
 open System.Reflection
@@ -81,8 +81,18 @@ module SpecificationSerializer =
         |> Seq.map getMethodSpec
         |> List.ofSeq
 
-    let serilizeApiSpec<'a>() =
+    let serializeApiSpec<'a>() =
         let apiType = typeof<'a>
         let apiName = getApiName apiType
         let apiMethods = getMethods apiType
         { name = apiName; methods = apiMethods }
+
+    open System.IO
+    open FSharp.Json
+
+    let saveToFile spec path =
+        if Path.IsPathRooted(path) then
+            if File.Exists path then
+                File.Delete path
+            File.WriteAllText(path, Json.serialize spec)
+        else failwithf "Path '%s' not rooted." path
