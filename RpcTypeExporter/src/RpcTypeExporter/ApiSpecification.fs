@@ -3,24 +3,24 @@
 open System
 open System.Reflection
 
-type Value =
+type ValueSpec =
   | Unit
   | Integer
   | Float
   | String
   | Bool
-  | List of valueType: Value
+  | List of valueType: ValueSpec
   | Complex of Named list
-and Named = { name: string; valueType: Value }
+and Named = { name: string; valueType: ValueSpec }
 
-type Method = 
+type MethodSpec = 
   { name: string 
-    returns: Value
-    parameters: Value }
+    returns: ValueSpec
+    parameters: ValueSpec }
 
-type Api = 
+type ApiSpec = 
   { name: string
-    methods: Method list }
+    methods: MethodSpec list }
 
 module SpecificationSerializer =
 
@@ -33,11 +33,11 @@ module SpecificationSerializer =
         else
             typeName
 
-    let rec getTypeValue (someType: Type) =
+    let rec getValueSpec (someType: Type) =
         match someType with
         | IsPrimitiveType t -> t
         | IsGenericEnumerable t -> t
-        | IsRecordType t -> t
+        | IsRecord t -> t
         | x -> failwithf "Unsupported type '%s'." x.Name
     and (|IsPrimitiveType|_|) (t: Type) = 
         match t.FullName with
@@ -47,7 +47,7 @@ module SpecificationSerializer =
         | "System.Boolean" -> Some Bool
         | "Microsoft.FSharp.Core.Unit" -> Some Unit
         | _ -> None
-    and (|IsRecordType|_|) (t: Type) =
+    and (|IsRecord|_|) (t: Type) =
         let isRecord (t: Type) = 
             let attr = t.GetCustomAttribute(typeof<Microsoft.FSharp.Core.CompilationMappingAttribute>)
             if attr <> null then 
@@ -56,24 +56,24 @@ module SpecificationSerializer =
             else false
         if isRecord t then
             let properties = t.GetProperties(publicInstance ||| BindingFlags.GetProperty)
-            let fields = [ for prop in properties -> { name = prop.Name; valueType = getTypeValue prop.PropertyType }]
+            let fields = [ for prop in properties -> { name = prop.Name; valueType = getValueSpec prop.PropertyType }]
             Some (Complex fields)
         else None
     and (|IsGenericEnumerable|_|) (someType: Type) =
         let enumerable = someType.GetInterface("IEnumerable`1")
         if enumerable <> null then
             let genericArgument = enumerable.GenericTypeArguments.[0]
-            Some (List (getTypeValue genericArgument))
+            Some (List (getValueSpec genericArgument))
         else None
 
     let getParamsSpec (parameters: ParameterInfo seq) =
         [ for p in parameters ->
-            { name = p.Name; valueType = getTypeValue p.ParameterType} ]
+            { name = p.Name; valueType = getValueSpec p.ParameterType} ]
 
     let getMethodSpec (method: MethodInfo) =
         let name = method.Name
         let parameters = Complex(getParamsSpec(method.GetParameters()))
-        let returns = getTypeValue method.ReturnType
+        let returns = getValueSpec method.ReturnType
         { name = name; parameters = parameters; returns = returns }
 
     let getMethods (apiType: Type) =

@@ -10,21 +10,20 @@ open Microsoft.Extensions.Logging
 open Microsoft.Extensions.DependencyInjection
 open Giraffe
 
-// ---------------------------------
-// Web app
-// ---------------------------------
+type ISampleApi =
+    abstract Sum: a: int -> b: int -> int
+    abstract Mul: a: int -> b: int -> int
 
-let indexHandler (name : string) =
-    
-    text ""
+type SampleApi() =
+    interface ISampleApi with
+        member _.Sum a b = a + b
+        member _.Mul a b = a * b
+
+let apiInstance = SampleApi()
 
 let webApp =
     choose [
-        GET >=>
-            choose [
-                route "/" >=> indexHandler "world"
-                routef "/hello/%s" indexHandler
-            ]
+        XRpcServer.apiEntryPoint<ISampleApi> apiInstance
         setStatusCode 404 >=> text "Not Found" ]
 
 let errorHandler (ex : Exception) (logger : ILogger) =

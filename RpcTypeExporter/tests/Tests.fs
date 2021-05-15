@@ -30,14 +30,14 @@ let ``Sample api Sum() and Mul() members serilized right`` () =
     let parameters = Complex([
         { name = "a"; valueType = Integer }
         { name = "b"; valueType = Integer } ])
-    let retuns = Value.Integer
+    let retuns = ValueSpec.Integer
 
     Assert.Contains({ name = "Sum"; parameters = parameters; returns = retuns }, methods)
     Assert.Contains({ name = "Mul"; parameters = parameters; returns = retuns }, methods)
 
 [<Fact>] 
 let ``Simple record type serializedCorrect``() =
-    let serilized = SpecificationSerializer.getTypeValue(typeof<DevisionArguments>)
+    let serilized = SpecificationSerializer.getValueSpec(typeof<DevisionArguments>)
 
     let expected = Complex([
         { name = "devisor"; valueType = Float }
@@ -61,7 +61,7 @@ let ``Sample api Devide() member serilized right`` () =
 
 [<Fact>]
 let ``List serialized correctly`` () =
-    let serializedType = SpecificationSerializer.getTypeValue(typeof<int list>)
+    let serializedType = SpecificationSerializer.getValueSpec(typeof<int list>)
     Assert.Equal(List Integer, serializedType)
 
 [<Fact>]
@@ -80,15 +80,15 @@ let ``Sample api DevideMany() member serialized`` () =
 
 [<Fact>]
 let ``Primitive types serialized`` () =
-    Assert.Equal(Value.Integer, SpecificationSerializer.getTypeValue(typeof<int>))
-    Assert.Equal(Value.Float, SpecificationSerializer.getTypeValue(typeof<float>))
-    Assert.Equal(Value.String, SpecificationSerializer.getTypeValue(typeof<string>))
-    Assert.Equal(Value.Bool, SpecificationSerializer.getTypeValue(typeof<bool>))
-    Assert.Equal(Value.Unit, SpecificationSerializer.getTypeValue(typeof<unit>))
+    Assert.Equal(ValueSpec.Integer, SpecificationSerializer.getValueSpec(typeof<int>))
+    Assert.Equal(ValueSpec.Float, SpecificationSerializer.getValueSpec(typeof<float>))
+    Assert.Equal(ValueSpec.String, SpecificationSerializer.getValueSpec(typeof<string>))
+    Assert.Equal(ValueSpec.Bool, SpecificationSerializer.getValueSpec(typeof<bool>))
+    Assert.Equal(ValueSpec.Unit, SpecificationSerializer.getValueSpec(typeof<unit>))
 
 [<Fact>]
 let ``Some unsupported types not serialized`` () =    
     Assert.Throws<exn>(fun () -> 
-        SpecificationSerializer.getTypeValue(
+        SpecificationSerializer.getValueSpec(
             typeof<System.Collections.Generic.Dictionary<int, int>>) 
         |> ignore)

@@ -7,10 +7,12 @@
 
   <ItemGroup>
     <Compile Include="ApiSpecification.fs" />
+    <Compile Include="ValueSerialization.fs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Fsharp.Json" Version="0.4.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
 </Project>
