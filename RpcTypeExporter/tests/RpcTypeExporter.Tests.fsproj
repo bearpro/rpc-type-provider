@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="SerialziationTests.fs" />
-    <Compile Include="Tests.fs" />
+    <Compile Include="Tests.Serialization.fs" />
+    <Compile Include="Tests.Specification.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 

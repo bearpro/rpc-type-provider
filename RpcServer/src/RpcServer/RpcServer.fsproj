@@ -10,7 +10,8 @@
     <PackageReference Include="Ply" Version="0.3.*" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="RpcServer.fs" />
+    <Compile Include="RpcServer.MemberCallDispatcher.fs" />
+    <Compile Include="RpcServer.Server.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>

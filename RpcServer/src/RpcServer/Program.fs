@@ -23,7 +23,7 @@ let apiInstance = SampleApi()
 
 let webApp =
     choose [
-        XRpcServer.apiEntryPoint<ISampleApi> apiInstance
+        RpcServer.Server.apiEntryPoint<ISampleApi> apiInstance
         setStatusCode 404 >=> text "Not Found" ]
 
 let errorHandler (ex : Exception) (logger : ILogger) =
