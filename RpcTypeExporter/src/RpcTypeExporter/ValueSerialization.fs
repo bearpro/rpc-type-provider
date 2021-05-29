@@ -29,15 +29,12 @@ with
             ValueSpec.Complex(typeName, itemSpecs)
 and NamedValue = { name: string; value: Value }
 
-type SerializationContext =
-    { complexTypeMap: Map<ValueSpec, Type> }
-
 let assertTypeMatched (value: obj) valueSpec =
     let fail() = failwithf "Value %A not matches specification %A" value valueSpec
     if (value = null && valueSpec = ValueSpec.Unit) then
         ()
     else
-        let actualValueSpec = getValueSpec(value.GetType())
+        let actualValueSpec, _ = getSpec SerializationContext.Empty (value.GetType())
         if actualValueSpec = valueSpec then () else fail()
 
 let iterateFields (fieldsSpec: Named list) (value: obj) =
@@ -48,39 +45,38 @@ let iterateFields (fieldsSpec: Named list) (value: obj) =
         let propValue = matchedProp.GetValue value
         namedField, propValue ]
 
-let rec serialize context (valueSpec: ValueSpec) (value: obj) : Value * SerializationContext  =
+let rec serialize (valueSpec: ValueSpec) (value: obj) : Value =
     assertTypeMatched value valueSpec
     match valueSpec with
-    | ValueSpec.Unit -> Value.Unit, context
-    | ValueSpec.Integer -> Value.Integer (value :?> int), context
-    | ValueSpec.Float -> Value.Float (value :?> float), context
-    | ValueSpec.String -> Value.String (value :?> string), context
-    | ValueSpec.Bool -> Value.Bool (value :?> bool), context
+    | ValueSpec.Unit -> Value.Unit
+    | ValueSpec.Integer -> Value.Integer (value :?> int)
+    | ValueSpec.Float -> Value.Float (value :?> float)
+    | ValueSpec.String -> Value.String (value :?> string)
+    | ValueSpec.Bool -> Value.Bool (value :?> bool)
     | ValueSpec.List listItemSpec -> 
         let list = value :?> System.Collections.IEnumerable
-        let rec serializeItems context (enumerator: Collections.IEnumerator) =
+        let rec serializeItems (enumerator: Collections.IEnumerator) =
             if enumerator.MoveNext() then
-                let item, ctx = serialize context listItemSpec (enumerator.Current)
-                let items, ctx = serializeItems ctx enumerator
-                item :: items, ctx
-            else [], context
+                let item = serialize listItemSpec (enumerator.Current)
+                let items = serializeItems enumerator
+                item :: items
+            else []
 
-        let items, context = serializeItems context (list.GetEnumerator())
-        Value.List(listItemSpec, items), context
+        let items = serializeItems (list.GetEnumerator())
+        Value.List(listItemSpec, items)
     | ValueSpec.Complex(typeName, namedSpec) -> 
         let t = value.GetType()
-        let context' = { context with complexTypeMap = context.complexTypeMap.Add(valueSpec, t) }
-        let rec serializeFields context (fields: (Named * obj) list) =
+        let rec serializeFields (fields: (Named * obj) list) =
             match fields with
-            | [] -> [], context
+            | [] -> []
             | (named, value) :: xs -> 
-                let item, ctx = serialize context named.valueType value
+                let item = serialize named.valueType value
                 let item = { name = named.name; value = item }
-                let items, ctx = serializeFields ctx xs
-                item :: items, ctx
-        let fields, context'' = serializeFields context' (iterateFields namedSpec value)
+                let items = serializeFields xs
+                item :: items
+        let fields = serializeFields (iterateFields namedSpec value)
 
-        Value.Complex(typeName, fields), context''
+        Value.Complex(typeName, fields)
 
 let rec deserialize (serializationContext: SerializationContext) (value: Value) : obj =
     let ctx = serializationContext

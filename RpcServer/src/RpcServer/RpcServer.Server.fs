@@ -14,7 +14,7 @@ let memberEndpoint (apiMethod: MethodSpec) =
     subRoute $"/{apiMethod.name}" (text "kek")
 
 let apiEntryPoint<'api> (apiImplementation: 'api) =
-    let apiSpec = serializeApiSpec<'api>()
+    let apiSpec, _ = serializeApiSpec<'api>()
     let members = apiSpec.methods |> List.map memberEndpoint
     let apiEntryPoint = 
         subRoute $"/{apiSpec.name}" (

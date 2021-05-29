@@ -9,8 +9,7 @@ open RpcTypeExporter.ValueSerialization
 let mutable ctx = { complexTypeMap = Map.empty }
 
 let serialize spec value =
-    let serialized, ctx' = serialize ctx spec value
-    ctx <- ctx'
+    let serialized = serialize spec value
     serialized
 
 let deserialize = deserialize ctx
@@ -111,9 +110,9 @@ let ``List value deserialized to the same type`` () =
 
 [<Fact>]
 let ``Record value deserialized to the same type`` () =
-    Assert.True(true)
     let source = { a = 1; b = true }
-    let serialized, ctx = RpcTypeExporter.ValueSerialization.serialize ctx sampleRecordSpec source
+    let _, ctx = RpcTypeExporter.ApiSpecification.getSpec SerializationContext.Empty (source.GetType())
+    let serialized = RpcTypeExporter.ValueSerialization.serialize sampleRecordSpec source
     let deserialized = (RpcTypeExporter.ValueSerialization.deserialize ctx serialized) :?> SampleRecord
     Assert.Equal(source, deserialized)
 

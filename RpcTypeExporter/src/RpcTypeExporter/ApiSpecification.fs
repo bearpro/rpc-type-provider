@@ -22,6 +22,10 @@ type ApiSpec =
   { name: string
     methods: MethodSpec list }
 
+type SerializationContext =
+    { complexTypeMap: Map<ValueSpec, Type> }
+    with
+        static member Empty = { complexTypeMap = Map.empty }
 
 let publicInstance = BindingFlags.Public ||| BindingFlags.Instance
 
@@ -32,21 +36,21 @@ let getApiName (apiType: Type) =
     else
         typeName
 
-let rec getValueSpec (someType: Type) =
-    match someType with
-    | IsPrimitiveType t -> t
-    | IsGenericEnumerable t -> t
-    | IsRecord t -> t
-    | x -> failwithf "Unsupported type '%s'." x.Name
-and (|IsPrimitiveType|_|) (t: Type) = 
+let rec getSpec ctx (someType: Type): ValueSpec * SerializationContext =
+    match (someType, ctx) with
+    | IsPrimitiveType (t, ctx) -> t, ctx
+    | IsGenericEnumerable (t, ctx) -> t, ctx
+    | IsRecord (t, ctx) -> t, ctx
+    | (x, _) -> failwithf "Unsupported type '%s'." x.Name
+and (|IsPrimitiveType|_|) (t: Type, ctx) = 
     match t.FullName with
-    | "System.Int32" -> Some Integer
-    | "System.Double" -> Some Float
-    | "System.String" -> Some String
-    | "System.Boolean" -> Some Bool
-    | "Microsoft.FSharp.Core.Unit" -> Some Unit
+    | "System.Int32" -> Some (Integer, ctx)
+    | "System.Double" -> Some (Float, ctx)
+    | "System.String" -> Some (String, ctx)
+    | "System.Boolean" -> Some (Bool, ctx)
+    | "Microsoft.FSharp.Core.Unit" -> Some (Unit, ctx)
     | _ -> None
-and (|IsRecord|_|) (t: Type) =
+and (|IsRecord|_|) (t: Type, ctx) =
     let isRecord (t: Type) = 
         let attr = t.GetCustomAttribute(typeof<Microsoft.FSharp.Core.CompilationMappingAttribute>)
         if attr <> null then 
@@ -55,36 +59,54 @@ and (|IsRecord|_|) (t: Type) =
         else false
     if isRecord t then
         let properties = t.GetProperties(publicInstance ||| BindingFlags.GetProperty)
-        let fields = [ for prop in properties -> { name = prop.Name; valueType = getValueSpec prop.PropertyType }]
-        Some (Complex(t.Name, fields))
+        let folder (specs, ctx) (propi: PropertyInfo) =
+            let propspec, ctx = getSpec ctx propi.PropertyType
+            ({ name = propi.Name; valueType = propspec } :: specs, ctx)
+        let fields, ctx = properties |> Seq.fold folder ([], ctx)
+        let spec = Complex(t.Name, fields |> List.rev)
+        let ctx = { ctx with complexTypeMap = ctx.complexTypeMap.Add(spec, t)}
+        Some(spec, ctx)
     else None
-and (|IsGenericEnumerable|_|) (someType: Type) =
+and (|IsGenericEnumerable|_|) (someType: Type, ctx) =
     let enumerable = someType.GetInterface("IEnumerable`1")
     if enumerable <> null then
         let genericArgument = enumerable.GenericTypeArguments.[0]
-        Some (List (getValueSpec genericArgument))
+        let spec, ctx = getSpec ctx genericArgument
+        Some (List spec, ctx)
     else None
 
-let getParamsSpec (parameters: ParameterInfo seq) =
-    [ for p in parameters ->
-        { name = p.Name; valueType = getValueSpec p.ParameterType} ]
+let getParamsSpec ctx (parameters: ParameterInfo seq) =
+    let folder (specs, ctx) (parami: ParameterInfo) =
+        let spec, ctx = getSpec ctx parami.ParameterType
+        { name = parami.Name; valueType = spec } :: specs, ctx
 
-let getMethodSpec (method: MethodInfo) =
+    let parmsSpecs, ctx = 
+        parameters
+        |> Seq.fold folder ([], ctx)
+    (Seq.rev >> List.ofSeq) parmsSpecs, ctx
+
+let getMethodSpec ctx (method: MethodInfo) =
     let name = method.Name
-    let parameters = Complex($"{name}.params", getParamsSpec(method.GetParameters()))
-    let returns = getValueSpec method.ReturnType
-    { name = name; parameters = parameters; returns = returns }
+    let parmItemsSpec, ctx = getParamsSpec ctx (method.GetParameters())
+    let parameters = Complex($"{name}.params", parmItemsSpec)
+    let returns, ctx = getSpec ctx method.ReturnType
+    { name = name; parameters = parameters; returns = returns }, ctx
 
-let getMethods (apiType: Type) =
-    apiType.GetMethods(publicInstance)
-    |> Seq.map getMethodSpec
-    |> List.ofSeq
+let getMethods ctx (apiType: Type) =
+    let folder (state: {| methods: MethodSpec list; ctx: SerializationContext |}) mi =
+        let spec, ctx' = getMethodSpec ctx mi
+        {| methods = spec :: state.methods; ctx = ctx' |}
+
+    let xs = apiType.GetMethods(publicInstance) |> Array.fold folder {| methods = []; ctx = ctx |}
+    xs.methods |> List.rev, xs.ctx
+
 
 let serializeApiSpec<'a>() =
+    let ctx = { complexTypeMap = Map.empty }
     let apiType = typeof<'a>
     let apiName = getApiName apiType
-    let apiMethods = getMethods apiType
-    { name = apiName; methods = apiMethods }
+    let apiMethods, ctx = getMethods ctx apiType
+    { name = apiName; methods = apiMethods }, ctx
 
 open System.IO
 open FSharp.Json

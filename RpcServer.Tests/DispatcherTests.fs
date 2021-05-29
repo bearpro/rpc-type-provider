@@ -4,6 +4,7 @@ open System
 open Xunit
 open FSharp.Json
 open RpcServer
+open RpcTypeExporter.ApiSpecification
 open RpcTypeExporter.ValueSerialization
 
 type ISampleApi =
@@ -17,7 +18,7 @@ type SampleApi() =
 
 let mutable ctx = { complexTypeMap = Map.empty }
 
-let apiSpec = RpcTypeExporter.ApiSpecification.serializeApiSpec<ISampleApi>()
+let apiSpec, _ = RpcTypeExporter.ApiSpecification.serializeApiSpec<ISampleApi>()
 let api = SampleApi() :> ISampleApi
 
 [<Fact>]

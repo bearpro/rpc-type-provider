@@ -19,12 +19,12 @@ type ISampleApi =
 
 [<Fact>]
 let ``Sample api spec name right`` () =
-    let serilizedSpec = serializeApiSpec<ISampleApi>()
+    let serilizedSpec, _ = serializeApiSpec<ISampleApi>()
     Assert.Equal("SampleApi", serilizedSpec.name)
 
 [<Fact>]
 let ``Sample api Sum() and Mul() members serilized right`` () =
-    let serilizedSpec = serializeApiSpec<ISampleApi>()
+    let serilizedSpec, _ = serializeApiSpec<ISampleApi>()
     let methods = serilizedSpec.methods
     
     let parameters m = Complex($"{m}.params", [
@@ -37,7 +37,7 @@ let ``Sample api Sum() and Mul() members serilized right`` () =
 
 [<Fact>] 
 let ``Simple record type serializedCorrect``() =
-    let serilized = getValueSpec(typeof<DevisionArguments>)
+    let serilized, _ = getSpec SerializationContext.Empty (typeof<DevisionArguments>)
 
     let expected = Complex("DevisionArguments", [
         { name = "devisor"; valueType = Float }
@@ -47,7 +47,7 @@ let ``Simple record type serializedCorrect``() =
 
 [<Fact>]
 let ``Sample api Devide() member serilized right`` () =
-    let serilizedSpec = serializeApiSpec<ISampleApi>()
+    let serilizedSpec, _ = serializeApiSpec<ISampleApi>()
     let methods = serilizedSpec.methods
 
     let parameters = Complex("Devide.params", [
@@ -61,12 +61,12 @@ let ``Sample api Devide() member serilized right`` () =
 
 [<Fact>]
 let ``List serialized correctly`` () =
-    let serializedType = getValueSpec(typeof<int list>)
+    let serializedType, _ = getSpec SerializationContext.Empty (typeof<int list>)
     Assert.Equal(List Integer, serializedType)
 
 [<Fact>]
 let ``Sample api DevideMany() member serialized`` () =
-    let serilizedSpec = serializeApiSpec<ISampleApi>()
+    let serilizedSpec, _ = serializeApiSpec<ISampleApi>()
     let methods = serilizedSpec.methods
     let parameters = Complex("DevideMany.params", [
         { name = "argList"; 
@@ -80,14 +80,16 @@ let ``Sample api DevideMany() member serialized`` () =
 
 [<Fact>]
 let ``Primitive types serialized`` () =
-    Assert.Equal(ValueSpec.Integer, getValueSpec(typeof<int>))
-    Assert.Equal(ValueSpec.Float, getValueSpec(typeof<float>))
-    Assert.Equal(ValueSpec.String, getValueSpec(typeof<string>))
-    Assert.Equal(ValueSpec.Bool, getValueSpec(typeof<bool>))
-    Assert.Equal(ValueSpec.Unit, getValueSpec(typeof<unit>))
+    let fst (a, b) = a
+    let ctx = SerializationContext.Empty
+    Assert.Equal(ValueSpec.Integer, getSpec ctx (typeof<int>) |> fst)
+    Assert.Equal(ValueSpec.Float, getSpec ctx (typeof<float>) |> fst)
+    Assert.Equal(ValueSpec.String, getSpec ctx (typeof<string>) |> fst)
+    Assert.Equal(ValueSpec.Bool, getSpec ctx (typeof<bool>) |> fst)
+    Assert.Equal(ValueSpec.Unit, getSpec ctx (typeof<unit>) |> fst)
 
 [<Fact>]
 let ``Some unsupported types not serialized`` () =    
     Assert.Throws<exn>(fun () -> 
-        getValueSpec(typeof<System.Collections.Generic.Dictionary<int, int>>) 
+        getSpec SerializationContext.Empty (typeof<System.Collections.Generic.Dictionary<int, int>>) 
         |> ignore)
