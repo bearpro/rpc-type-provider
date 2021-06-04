@@ -2,6 +2,7 @@
 
 open System
 open System.Reflection
+open System.Collections.Generic
 
 type ValueSpec =
   | Unit
@@ -64,41 +65,40 @@ and (|IsRecord|_|) (t: Type, ctx) =
             ({ name = propi.Name; valueType = propspec } :: specs, ctx)
         let fields, ctx = properties |> Seq.fold folder ([], ctx)
         let spec = Complex(t.Name, fields |> List.rev)
-        let ctx = { ctx with complexTypeMap = ctx.complexTypeMap.Add(spec, t)}
-        Some(spec, ctx)
+        let ctx' = { ctx with complexTypeMap = ctx.complexTypeMap.Add(spec, t)}
+        Some(spec, ctx')
     else None
 and (|IsGenericEnumerable|_|) (someType: Type, ctx) =
     let enumerable = someType.GetInterface("IEnumerable`1")
     if enumerable <> null then
         let genericArgument = enumerable.GenericTypeArguments.[0]
-        let spec, ctx = getSpec ctx genericArgument
-        Some (List spec, ctx)
+        let spec, ctx' = getSpec ctx genericArgument
+        Some (List spec, ctx')
     else None
 
 let getParamsSpec ctx (parameters: ParameterInfo seq) =
     let folder (specs, ctx) (parami: ParameterInfo) =
-        let spec, ctx = getSpec ctx parami.ParameterType
-        { name = parami.Name; valueType = spec } :: specs, ctx
+        let spec, ctx' = getSpec ctx parami.ParameterType
+        { name = parami.Name; valueType = spec } :: specs, ctx'
 
-    let parmsSpecs, ctx = 
-        parameters
-        |> Seq.fold folder ([], ctx)
+    let parmsSpecs, ctx = Seq.fold folder ([], ctx) parameters
+    
     (Seq.rev >> List.ofSeq) parmsSpecs, ctx
 
 let getMethodSpec ctx (method: MethodInfo) =
     let name = method.Name
-    let parmItemsSpec, ctx = getParamsSpec ctx (method.GetParameters())
+    let parmItemsSpec, ctx' = getParamsSpec ctx (method.GetParameters())
     let parameters = Complex($"{name}.params", parmItemsSpec)
-    let returns, ctx = getSpec ctx method.ReturnType
-    { name = name; parameters = parameters; returns = returns }, ctx
+    let returns, ctx'' = getSpec ctx' method.ReturnType
+    { name = name; parameters = parameters; returns = returns }, ctx''
 
 let getMethods ctx (apiType: Type) =
-    let folder (state: {| methods: MethodSpec list; ctx: SerializationContext |}) mi =
+    let folder (methods: MethodSpec list, ctx: SerializationContext) mi =
         let spec, ctx' = getMethodSpec ctx mi
-        {| methods = spec :: state.methods; ctx = ctx' |}
+        spec :: methods, ctx'
 
-    let xs = apiType.GetMethods(publicInstance) |> Array.fold folder {| methods = []; ctx = ctx |}
-    xs.methods |> List.rev, xs.ctx
+    let methods, ctx' = apiType.GetMethods(publicInstance) |> Array.fold folder ([], ctx)
+    List.rev methods, ctx'
 
 
 let serializeApiSpec<'a>() =

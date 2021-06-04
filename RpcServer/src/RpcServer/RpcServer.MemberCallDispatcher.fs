@@ -8,7 +8,7 @@ open FSharp.Json
 open RpcTypeExporter.ApiSpecification
 open RpcTypeExporter.ValueSerialization
 
-let inline json v = 
+let inline private json v = 
     let json = FSharp.Json.Json.serialize v
     text json
 

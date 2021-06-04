@@ -27,5 +27,10 @@
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None> -->
   </ItemGroup>
+  <ItemGroup>
+    <Reference Include="RpcTypeExporter">
+      <HintPath>..\..\..\RpcTypeExporter\src\RpcTypeExporter\bin\Debug\netstandard2.0\RpcTypeExporter.dll</HintPath>
+    </Reference>
+  </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

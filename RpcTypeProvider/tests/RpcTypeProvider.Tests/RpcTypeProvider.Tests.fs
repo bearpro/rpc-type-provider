@@ -4,21 +4,8 @@ module RpcTypeProviderTests
 open MyNamespace
 open NUnit.Framework
 
-[<Test>]
-let ``Default constructor should create instance`` () =
-    Assert.AreEqual("My internal state", MyType().InnerState)
-
-[<Test>]
-let ``Constructor with parameter should create instance`` () =
-    Assert.AreEqual("override", MyType("override").InnerState)
-
-[<Test>]
-let ``Method with ReflectedDefinition parameter should get its name`` () =
-    let myValue = 2
-    Assert.AreEqual("myValue", MyType.NameOf(myValue))
-
-type Generative2 = RpcTypeProvider.GenerativeProvider<2>
-type Generative4 = RpcTypeProvider.GenerativeProvider<4>
+type Generative2 = Sample.GenerativeProvider<2>
+type Generative4 = Sample.GenerativeProvider<4>
 
 [<Test>]
 let ``Can access properties of generative provider 2`` () =
@@ -34,3 +21,20 @@ let ``Can access properties of generative provider 4`` () =
     Assert.AreEqual(obj.Property3, 3)
     Assert.AreEqual(obj.Property4, 4)
 
+[<Literal>]
+let SimpleSpecLocation = @"C:\Users\mprokazin\source\repos\rpc-type-provider\sample\SimpleSampleB.spec.json"
+type SimpleRpc = RpcTypeProvider.RpcTypeProvider<SimpleSpecLocation>
+
+let sum = SimpleRpc.Sum(1, 2)
+
+[<Literal>]
+let Source = @"C:\Users\mprokazin\source\repos\rpc-type-provider\sample\ComplexSampleB.spec.json"
+type X = RpcTypeProvider.RpcTypeProvider<Source>
+
+[<Test>]
+let ``Fields assigned`` () =
+    let book = X.Book("", 2002, "", "", "")
+    
+    
+    Assert.AreEqual(book.PublicationYear, 2002)
+    

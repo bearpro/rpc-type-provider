@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <Compile Include="DispatcherTests.fs" />
-    <Compile Include="WebAppTests.fs" />
+    <Compile Include="ServerTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
