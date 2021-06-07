@@ -7,3 +7,4 @@ paket-files/
 .vs/
 *.binlog
 sample/
+tmp/
