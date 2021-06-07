@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "dgSpecHash": "z7lh5gyZSMW4cL8dOelXYf2boaz7lJ4hYswJ52n4VJqJU5BVywlKs9HisBjE6J+VlmGXeeQJtkNpAgpDpqqEag==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\mprokazin\\source\\repos\\rpc-type-provider\\RpcTypeProvider\\src\\RpcTypeProvider.Runtime\\RpcTypeProvider.Runtime.fsproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\mprokazin\\.nuget\\packages\\fsharp.core\\4.3.4\\fsharp.core.4.3.4.nupkg.sha512",
+    "C:\\Users\\mprokazin\\.nuget\\packages\\fsharp.json\\0.3.7\\fsharp.json.0.3.7.nupkg.sha512",
+    "C:\\Users\\mprokazin\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",
+    "C:\\Users\\mprokazin\\.nuget\\packages\\netstandard.library\\2.0.3\\netstandard.library.2.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}
