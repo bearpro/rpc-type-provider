@@ -25,6 +25,12 @@
   <ItemGroup>
     <!-- Be explicit about the version of FSharp.Core since we mention it in the manual nuget package spec -->
     <PackageReference Include="FSharp.Core" Version="4.3.4" />
+    <PackageReference Include="FSharp.Json" Version="0.3.7" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="RpcTypeExporter">
+      <HintPath>..\..\..\RpcTypeExporter\src\RpcTypeExporter\bin\Debug\netstandard2.0\RpcTypeExporter.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <Target Name="BeforeBuild">
     <MSBuild Projects="..\RpcTypeProvider.DesignTime\RpcTypeProvider.DesignTime.fsproj" Targets="Restore" />

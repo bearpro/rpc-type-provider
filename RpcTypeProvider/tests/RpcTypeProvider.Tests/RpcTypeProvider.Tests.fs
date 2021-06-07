@@ -34,7 +34,5 @@ type X = RpcTypeProvider.RpcTypeProvider<Source>
 [<Test>]
 let ``Fields assigned`` () =
     let book = X.Book("", 2002, "", "", "")
-    
-    
     Assert.AreEqual(book.PublicationYear, 2002)
     
