@@ -1,0 +1,8 @@
+bin/
+obj/
+lib/
+.paket/
+packages/
+paket-files/
+.vs/
+*.binlog

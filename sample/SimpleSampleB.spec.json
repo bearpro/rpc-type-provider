@@ -1,0 +1,55 @@
+{
+  "name": "SampleApi",
+  "methods": [
+    {
+      "name": "Sum",
+      "returns": {
+        "Integer": []
+      },
+      "parameters": {
+        "Complex": [
+          "Sum.params",
+          [
+            {
+              "name": "a",
+              "valueType": {
+                "Integer": []
+              }
+            },
+            {
+              "name": "b",
+              "valueType": {
+                "Integer": []
+              }
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "name": "Mul",
+      "returns": {
+        "Integer": []
+      },
+      "parameters": {
+        "Complex": [
+          "Mul.params",
+          [
+            {
+              "name": "a",
+              "valueType": {
+                "Integer": []
+              }
+            },
+            {
+              "name": "b",
+              "valueType": {
+                "Integer": []
+              }
+            }
+          ]
+        ]
+      }
+    }
+  ]
+}
