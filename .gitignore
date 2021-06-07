@@ -6,3 +6,4 @@ packages/
 paket-files/
 .vs/
 *.binlog
+sample/
