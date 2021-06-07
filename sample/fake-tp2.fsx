@@ -9,11 +9,8 @@ open System.Text
 open FSharp.Json
 open System.Net.Http
 
-// type ISampleApi =
-//     abstract Sum: a: int -> b: int -> int
-//     abstract Mul: a: int -> b: int -> int
-//     abstract FormatBibliographyEntry: book: Book -> string
-//     abstract FormatBibliography: books: Book list -> string list
+let c = new HttpClient()
+c.GetAsync("http://localhost:5000/SampleApi") |> Async.AwaitTask |> Async.RunSynchronously
 
 module Rpc =
     type Book(Author: string, Year: int, Title: string) =
